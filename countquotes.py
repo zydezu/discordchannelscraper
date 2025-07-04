@@ -116,7 +116,24 @@ def count_usernames_from_ocr(quote_data, folder_path="#quotes"):
 
         image_path = os.path.join(folder_path, filename)
         image = Image.open(image_path)
-        text = pytesseract.image_to_string(image, lang="eng")
+
+        # Convert to grayscale to improve OCR accuracy
+        gray = image.convert("L")
+
+        # Apply simple thresholding to further enhance text
+        threshold = 180
+        bw = gray.point(lambda x: 0 if x < threshold else 255, '1')
+
+        # Optional: Resize image if it's too small (improves OCR for small text)
+        min_width = 800
+        if bw.width < min_width:
+            scale = min_width / bw.width
+            new_size = (int(bw.width * scale), int(bw.height * scale))
+            bw = bw.resize(new_size, Image.LANCZOS)
+
+        # Use Tesseract with custom config for better accuracy
+        custom_config = r'--oem 3 --psm 6'
+        text = pytesseract.image_to_string(bw, lang="eng", config=custom_config)
         words = text.split()
 
         for word in words:

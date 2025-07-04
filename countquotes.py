@@ -10,12 +10,12 @@ import pytesseract
 import difflib
 import shutil
 
-# Try to find tesseract in PATH automatically
-tesseract_path = shutil.which("tesseract")
+tesseract_path = shutil.which("tesseract.exe") or shutil.which("tesseract")
 if tesseract_path:
+    print(f"Found tesseract at: {tesseract_path}")
     pytesseract.pytesseract.tesseract_cmd = tesseract_path
 else:
-    # Fallback to a default path if not found in PATH
+    print("Tesseract not found in PATH, using fallback path.")
     pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 nickname_to_name = {}

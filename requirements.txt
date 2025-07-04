@@ -1,0 +1,6 @@
+requests
+matplotlib
+pandas
+seaborn
+pillow
+pytesseract

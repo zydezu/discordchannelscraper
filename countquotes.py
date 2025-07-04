@@ -8,8 +8,15 @@ import seaborn as sns
 from PIL import Image
 import pytesseract
 import difflib
+import shutil
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+# Try to find tesseract in PATH automatically
+tesseract_path = shutil.which("tesseract")
+if tesseract_path:
+    pytesseract.pytesseract.tesseract_cmd = tesseract_path
+else:
+    # Fallback to a default path if not found in PATH
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 nickname_to_name = {}
 other_nicknames = {}
@@ -70,6 +77,8 @@ def download_attachments(file_path, download_dir="#quotes"):
             url = attachment.get("url")
             if not url:
                 continue
+
+            print(timestamp)
 
             url_filename = os.path.basename(url.split("?")[0])
             filename = f"{timestamp.replace(":", "-")}-{url_filename}"

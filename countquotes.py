@@ -154,6 +154,18 @@ def create_graph(quote_data):
     pivot_df = daily_counts.pivot(index="date", columns="user", values="count").fillna(0)
     pivot_df.index = pd.to_datetime(pivot_df.index)
     pivot_df = pivot_df.sort_index()
+
+    # Add a row one month before the first date, with all users at 0
+    if not pivot_df.empty:
+        min_date = pivot_df.index.min()
+        start_date = (min_date - pd.DateOffset(months=1)).normalize()
+        zero_row = pd.DataFrame(
+            {col: 0 for col in pivot_df.columns},
+            index=[start_date]
+        )
+        pivot_df = pd.concat([zero_row, pivot_df])
+        pivot_df = pivot_df.sort_index()
+
     cumulative = pivot_df.cumsum()
 
     # Assign a color to each user in order

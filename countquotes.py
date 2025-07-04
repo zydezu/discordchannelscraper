@@ -78,8 +78,6 @@ def download_attachments(file_path, download_dir="#quotes"):
             if not url:
                 continue
 
-            print(timestamp)
-
             url_filename = os.path.basename(url.split("?")[0])
             filename = f"{timestamp.replace(":", "-")}-{url_filename}"
             filepath = os.path.join(download_dir, filename)
@@ -111,7 +109,7 @@ def count_usernames_from_ocr(quote_data, folder_path="#quotes"):
                 nickname_to_name[key] = name
 
     for filename in os.listdir(folder_path):
-        if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
+        if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.webp', '.gif')):
             continue
 
         timestamp = filename.split("T")[0]

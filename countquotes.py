@@ -218,7 +218,7 @@ if __name__ == "__main__":
     root = tk.Tk()
     root.withdraw()
     file_path = filedialog.askopenfilename(
-        title="Select file containing links",
+        title="Select the JSON file for the channel",
         filetypes=[("JSON Files", "*.json")]
     )
     if file_path:

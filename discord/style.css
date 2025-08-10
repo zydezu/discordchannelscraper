@@ -155,7 +155,7 @@ code {
 .image {
     max-height: 350px;
     width: auto;
-    max-width: 550px;
+    max-width: max(550px, 100%);
     border-radius: 5px;
     margin-bottom: 2px;
 }

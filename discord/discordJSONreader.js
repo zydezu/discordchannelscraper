@@ -177,4 +177,5 @@ async function renderMessages(data) {
     }
 
     discordBox.appendChild(fragment);
+    console.debug(`%cuserinfogenerate.js %c> %cGenerated messages in ${(performance.now() - startTime).toFixed(2)}ms`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
 };

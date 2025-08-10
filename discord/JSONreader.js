@@ -1,6 +1,7 @@
 const messageTemplate = `
     <div class="message">
-        <img src="{{PFP}}" class="avatar" alt="{{DISPLAYNAME}} Avatar">
+        <img src="{{PFP}}" class="avatar" alt="{{DISPLAYNAME}} Avatar"
+        onload="this.style.opacity=1" loading="lazy">
         <div class="message-content">
             <div class="user-area">
                 <span class="username" style="color:{{ROLECOLOR}};">{{DISPLAYNAME}}</span>
@@ -12,55 +13,120 @@ const messageTemplate = `
     </div>
 `;
 
-const imageDiv = `<img src="{{IMAGEURL}}" class="image {{EXTRACLASSES}}" alt="{{IMAGEALT}}">`
+const imageDiv = `<img src="{{IMAGEURL}}" class="image {{EXTRACLASSES}}" alt="{{IMAGEALT}}"
+                    onload="this.style.opacity=1" loading="lazy">`
 const videoDiv = `<video controls src="{{VIDEOURL}}" class="image {{EXTRACLASSES}}" alt="{{VIDEOALT}}"></video>`
 
 const discordBox = document.getElementById("discordBox");
 const selectedFile = document.getElementById("selectedFile");
-
 const dropZone = document.querySelector("body");
 
-window.addEventListener("dragover", (e) => {
-    e.preventDefault();
-});
+let data;
+const mediaFiles = [];
 
-dropZone.addEventListener("drop", (e) => {
+window.addEventListener("dragover", e => e.preventDefault());
+
+dropZone.addEventListener("drop", e => {
     e.preventDefault();
-    const fileInput = document.getElementById("getFile");
-    read(e.dataTransfer.files);
+    const files = e.dataTransfer.files;
+    if (!files.length) return;
+
+    const file = files[0];
+    const type = file.type.toLowerCase();
+    const name = file.name.toLowerCase();
+
+    if (type === "application/json" || name.endsWith(".json")) {
+        handleJsonUpload(files);
+    } 
+    else if (type === "application/zip" || name.endsWith(".zip")) {
+        handleMediaUpload(files);
+    } 
+    else {
+        console.warn("Unsupported file type:", file.name);
+    }
 });
 
 function openFile() {
     document.getElementById("getFile").click();
 }
 
+function openMediaFile() {
+    document.getElementById("getMediaFile").click();
+}
+
 function readFile(file) {
     return new Promise((resolve, reject) => {
-        let fr = new FileReader();
-        fr.onload = (x) => resolve(fr.result);
-        try {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result);
+        fr.onerror = reject;
+
+        if (file.type === "application/json") {
             fr.readAsText(file);
-        } catch (error) {
-            console.log("Invalid file type!");
+        } else {
+            fr.readAsArrayBuffer(file);
         }
     });
 }
 
-async function read(input) {
-    fileType = "";
-    if (input.files) {
-        data = await readFile(input.files[0]);
-        selectedFile.innerHTML = input.files[0].name;
-        fileType = input.files[0].type;
-    } else {
-        data = await readFile(input[0]);
-        selectedFile.innerHTML = input[0].name;
-        fileType = input[0].type;
-    }
-    if (fileType != "application/json") return;
+async function handleJsonUpload(input) {
+    const file = input.files ? input.files[0] : input[0];
+    if (!file || file.type !== "application/json") return;
 
-    data = JSON.parse(data);
-    renderMessages(data);
+    selectedFile.innerHTML = `<code>${file.name}</code>`;
+
+    try {
+        const text = await readFile(file);
+        data = JSON.parse(text);
+        renderMessages(data);
+    } catch (err) {
+        console.error("Error reading JSON:", err);
+    }
+}
+
+async function handleMediaUpload(input) {
+    const file = input.files ? input.files[0] : input[0];
+    if (!file) return;
+
+    const fileNameLower = file.name.toLowerCase();
+    if (!(fileNameLower.endsWith(".zip") || file.type.toLowerCase().includes("zip"))) {
+        console.warn("Not a ZIP file:", file.name, file.type);
+        return;
+    }
+
+    selectedFile.innerHTML = `<code>${file.name}</code>`;
+
+    try {
+        const arrayBuffer = await readFile(file);
+        const zip = await JSZip.loadAsync(arrayBuffer);
+
+        for (const [filename, zipEntry] of Object.entries(zip.files)) {
+            if (!zipEntry.dir) {
+                const blob = await zipEntry.async("blob");
+                mediaFiles.push({ name: filename, blob });
+            }
+        }
+
+        console.debug(`%cDEBUG %c> %cZip file read!`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
+        // renderMediaFiles(mediaFiles);
+        if (data) renderMessages(data);
+    } catch (err) {
+        console.error("Error reading ZIP:", err);
+    }
+}
+
+function renderMediaFiles(files) {
+    const container = document.getElementById("discordBox");
+    container.innerHTML = "";
+
+    files.forEach(file => {
+        const url = URL.createObjectURL(file.blob);
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = file.name;
+        img.style.maxWidth = "150px";
+        img.style.margin = "5px";
+        container.appendChild(img);
+    });
 }
 
 function makeLinks(content) {
@@ -137,15 +203,36 @@ async function renderMessages(data) {
 
             const isOnlyMedia = messageContent === "";
 
-            if (fileType == 'image') {
+            if (fileType === 'image') {
+                const finalName = `${message.timestamp}-${media.fileName}`.replaceAll(':', '-');
+
+                const matchedMedia = mediaFiles.find(m => m.name === finalName);
+                let imageUrl = media.url; // fallback
+                if (matchedMedia) {
+                    imageUrl = URL.createObjectURL(matchedMedia.blob);
+                } else {
+                    console.debug(`%cDEBUG %c> %cFailed to find ${finalName} in zip file`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
+                }
+
                 attachmentsString += imageDiv
-                    .replace("{{IMAGEURL}}", media.url)
-                    .replace("{{IMAGEALT}}", fileName)
+                    .replace("{{IMAGEURL}}", imageUrl)
+                    .replace("{{IMAGEALT}}", finalName)
                     .replace("{{EXTRACLASSES}}", isOnlyMedia ? 'image-only' : '');
-            } else if (fileType == 'video') {
+
+            } else if (fileType === 'video') {
+                const finalName = `${message.timestamp}-${media.fileName}`.replaceAll(':', '-');
+
+                const matchedMedia = mediaFiles.find(m => m.name === finalName);
+                let videoUrl = media.url; // fallback
+                if (matchedMedia) {
+                    videoUrl = URL.createObjectURL(matchedMedia.blob);
+                } else {
+                    console.debug(`%cDEBUG %c> %cFailed to find ${finalName} in zip file`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
+                }
+
                 attachmentsString += videoDiv
-                    .replace("{{VIDEOURL}}", media.url)
-                    .replace("{{VIDEOALT}}", fileName)
+                    .replace("{{VIDEOURL}}", videoUrl)
+                    .replace("{{VIDEOALT}}", finalName)
                     .replace("{{EXTRACLASSES}}", isOnlyMedia ? 'image-only' : '');
             }
         });

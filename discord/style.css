@@ -25,9 +25,10 @@ body {
     background-color: #0d0c0f;
     color: #dcddde;
     font-family: "gg-sans", 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    padding-right: 10px;
-    min-width: 500px;
     animation: fade-in 0.2s ease-in-out;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 5px;
 }
 
 @keyframes fade-in {
@@ -152,6 +153,11 @@ code {
     font-weight: 400;
 }
 
+img {
+    opacity: 0;
+    transition: opacity 0.2s ease-in;
+}
+
 .image {
     max-height: 350px;
     width: auto;
@@ -165,7 +171,7 @@ code {
 }
 
 .message-text {
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .embed-container {
@@ -258,4 +264,12 @@ a:link {
 
 a:hover {
     text-decoration: underline;
+}
+
+#discordBox {
+    margin-top: 10px;
+}
+
+#selectedFile {
+    margin-left: 5px;
 }

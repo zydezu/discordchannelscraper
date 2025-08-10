@@ -2,28 +2,36 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport" />
     <title>Discord JSON Viewer</title>
+    <link rel="icon" href="favicon.ico" type="image/ico">
 
     <link rel="stylesheet" href="style.css">
 
     <script src="JSONreader.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
 <body class="theme-darker">
-    <button onclick="openFile()">Open JSON File</button>
-    <input type="file" id="getFile" onchange="read(this)" style="display:none">
-    <code><span id="selectedFile">No file selected...</span></code>
+    <input type="file" id="getFile" accept=".json" style="display:none" onchange="handleJsonUpload(this)">
+    <input type="file" id="getMediaFile" accept=".zip" style="display:none" onchange="handleMediaUpload(this)">
+
+    <button onclick="openFile()">Supply JSON</button>
+    <button onclick="openMediaFile()">Supply Media Zip File</button>
+
+    <span id="selectedFile"></span>
 
     <div id="discordBox">
         <div class="message">
-            <img src="https://umkl.co.uk/assets/media/faq/wumpus.avif" class="avatar" alt="Wumpus Avatar">
+            <img src="https://umkl.co.uk/assets/media/faq/wumpus.avif" class="avatar" alt="Wumpus Avatar"
+            onload="this.style.opacity=1" loading="lazy">
             <div class="message-content">
                 <div class="user-area">
                     <span class="username">Wumpus</span>
                     <span class="timestamp">12:20</span>
                 </div>
                 <div class="message-text">rocks are really old</div>
-                <img src="problematic.JPG" class="image" alt="Image">
+                <img src="problematic.JPG" class="image" alt="Every single day I'm more problematic than the day before"
+                onload="this.style.opacity=1" loading="lazy">
             </div>
         </div>
     </div>

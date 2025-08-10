@@ -16,6 +16,7 @@ const messageTemplate = `
 const imageDiv = `<img src="{{IMAGEURL}}" class="image {{EXTRACLASSES}}" alt="{{IMAGEALT}}"
                     onload="this.style.opacity=1" loading="lazy">`
 const videoDiv = `<video controls src="{{VIDEOURL}}" class="image {{EXTRACLASSES}}" alt="{{VIDEOALT}}"></video>`
+const audioDiv = `<audio controls src="{{AUDIOURL}}" class="{{EXTRACLASSES}}" alt="{{AUDIOALT}}"></audio>`
 
 const discordBox = document.getElementById("discordBox");
 const selectedFile = document.getElementById("selectedFile");
@@ -202,38 +203,51 @@ async function renderMessages(data) {
             }
 
             const isOnlyMedia = messageContent === "";
+            const finalName = `${message.timestamp}-${media.fileName}`.replaceAll(':', '-');
 
             if (fileType === 'image') {
-                const finalName = `${message.timestamp}-${media.fileName}`.replaceAll(':', '-');
-
                 const matchedMedia = mediaFiles.find(m => m.name === finalName);
-                let imageUrl = media.url; // fallback
+                let imageURL = media.url; // fallback
                 if (matchedMedia) {
-                    imageUrl = URL.createObjectURL(matchedMedia.blob);
+                    imageURL = URL.createObjectURL(matchedMedia.blob);
                 } else {
                     console.debug(`%cDEBUG %c> %cFailed to find ${finalName} in zip file`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
                 }
 
                 attachmentsString += imageDiv
-                    .replace("{{IMAGEURL}}", imageUrl)
+                    .replace("{{IMAGEURL}}", imageURL)
                     .replace("{{IMAGEALT}}", finalName)
                     .replace("{{EXTRACLASSES}}", isOnlyMedia ? 'image-only' : '');
 
             } else if (fileType === 'video') {
-                const finalName = `${message.timestamp}-${media.fileName}`.replaceAll(':', '-');
 
                 const matchedMedia = mediaFiles.find(m => m.name === finalName);
-                let videoUrl = media.url; // fallback
+                let videoURL = media.url; // fallback
                 if (matchedMedia) {
-                    videoUrl = URL.createObjectURL(matchedMedia.blob);
+                    videoURL = URL.createObjectURL(matchedMedia.blob);
                 } else {
                     console.debug(`%cDEBUG %c> %cFailed to find ${finalName} in zip file`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
                 }
 
                 attachmentsString += videoDiv
-                    .replace("{{VIDEOURL}}", videoUrl)
+                    .replace("{{VIDEOURL}}", videoURL)
                     .replace("{{VIDEOALT}}", finalName)
                     .replace("{{EXTRACLASSES}}", isOnlyMedia ? 'image-only' : '');
+            } else if (fileType === 'audio') {
+                const matchedMedia = mediaFiles.find(m => m.name === finalName);
+                let audioURL = media.url; // fallback
+                if (matchedMedia) {
+                    audioURL = URL.createObjectURL(matchedMedia.blob);
+                } else {
+                    console.debug(`%cDEBUG %c> %cFailed to find ${finalName} in zip file`, "color:#ff52dc", "color:#fff", "color:#ffa3ed");
+                }
+
+                attachmentsString += audioDiv
+                    .replace("{{AUDIOURL}}", audioURL)
+                    .replace("{{AUDIOALT}}", finalName)
+                    .replace("{{EXTRACLASSES}}", isOnlyMedia ? 'image-only' : '');
+            } else {
+                attachmentsString += `<span class="file-box image-only">${media.fileName}</span>`;
             }
         });
 

@@ -25,7 +25,6 @@ body {
     background-color: #0d0c0f;
     color: #dcddde;
     font-family: "gg-sans", 'Whitney', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-    animation: fade-in 0.2s ease-in-out;
     max-width: 1000px;
     margin: 0 auto;
     padding: 5px;

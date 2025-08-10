@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord JSON Viewer</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="discordJSONreader.js" defer></script>
+</head>
+<body class="theme-darker">
+    <button onclick="openFile()">Open JSON File</button>
+    <input type="file" id="getFile" onchange="read(this)" style="display:none">
+    <code><span id="selectedFile">No file selected...</span></code>
+
+    <div id="discordBox">
+        <div class="message">
+            <img src="https://umkl.co.uk/assets/media/faq/wumpus.avif" class="avatar" alt="Wumpus Avatar">
+            <div class="message-content">
+                <div class="user-area">
+                    <span class="username">Wumpus</span>
+                    <span class="timestamp">12:20</span>
+                </div>
+                <div class="message-text">rocks are really old</div>
+                <img src="problematic.JPG" class="image" alt="Image">
+            </div>
+        </div>
+    </div>
+</body>
+</html>
